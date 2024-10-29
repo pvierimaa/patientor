@@ -46,6 +46,31 @@ const PatientDetailPage = () => {
       </Typography>
       <Typography>ssn: {patient.ssn}</Typography>
       <Typography>occupation: {patient.occupation}</Typography>
+      <Typography variant="h5" style={{ marginTop: '16px', marginBottom: '8px' }}>
+        entries
+      </Typography>
+      {patient.entries.length > 0 ? (
+        patient.entries.map((entry) => (
+          <div key={entry.id}>
+            <Typography>
+              {entry.date} <i>{entry.description}</i>
+            </Typography>
+            {entry.diagnosisCodes && entry.diagnosisCodes.length > 0 && (
+              <div>
+                <ul>
+                  {entry.diagnosisCodes.map((code) => (
+                    <li key={code}>
+                      <Typography>{code}</Typography>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ))
+      ) : (
+        <Typography>No entries available</Typography>
+      )}
     </div>
   );
 };
