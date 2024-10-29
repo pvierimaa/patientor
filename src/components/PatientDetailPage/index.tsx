@@ -1,27 +1,32 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Typography } from '@mui/material';
-import axios from 'axios';
 import { Male, Female, Transgender } from '@mui/icons-material';
 
-import { Patient } from '../../types';
-import { apiBaseUrl } from '../../constants';
+import { Patient, Diagnosis } from '../../types';
+import patientService from '../../services/patients';
 
-const PatientDetailPage = () => {
+interface Props {
+  diagnoses: Diagnosis[];
+}
+
+const PatientDetailPage = ({ diagnoses }: Props) => {
   const { id } = useParams<{ id: string }>();
   const [patient, setPatient] = useState<Patient | null>(null);
 
   useEffect(() => {
     const fetchPatient = async () => {
       try {
-        const { data: fetchedPatient } = await axios.get<Patient>(`${apiBaseUrl}/patients/${id}`);
-        setPatient(fetchedPatient);
+        if (id) {
+          const patient = await patientService.getById(id);
+          setPatient(patient);
+        }
       } catch (error) {
         console.error('Failed to fetch patient data', error);
       }
     };
 
-    if (id) void fetchPatient();
+    fetchPatient();
   }, [id]);
 
   if (!patient) {
@@ -37,6 +42,11 @@ const PatientDetailPage = () => {
       default:
         return <Transgender />;
     }
+  };
+
+  const findDiagnosisName = (code: string): string | undefined => {
+    const diagnosis = diagnoses.find((d) => d.code === code);
+    return diagnosis ? diagnosis.name : undefined;
   };
 
   return (
@@ -60,7 +70,9 @@ const PatientDetailPage = () => {
                 <ul>
                   {entry.diagnosisCodes.map((code) => (
                     <li key={code}>
-                      <Typography>{code}</Typography>
+                      <Typography>
+                        {code} {findDiagnosisName(code)}
+                      </Typography>
                     </li>
                   ))}
                 </ul>
