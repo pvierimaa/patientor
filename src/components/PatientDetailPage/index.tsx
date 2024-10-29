@@ -5,6 +5,7 @@ import { Male, Female, Transgender } from '@mui/icons-material';
 
 import { Patient, Diagnosis } from '../../types';
 import patientService from '../../services/patients';
+import EntryDetails from './EntryDetails';
 
 interface Props {
   diagnoses: Diagnosis[];
@@ -44,40 +45,20 @@ const PatientDetailPage = ({ diagnoses }: Props) => {
     }
   };
 
-  const findDiagnosisName = (code: string): string | undefined => {
-    const diagnosis = diagnoses.find((d) => d.code === code);
-    return diagnosis ? diagnosis.name : undefined;
-  };
-
   return (
     <div>
       <Typography variant="h4" style={{ marginTop: '16px', marginBottom: '8px' }}>
         {patient.name} {getGenderIcon()}
       </Typography>
-      <Typography>ssn: {patient.ssn}</Typography>
-      <Typography>occupation: {patient.occupation}</Typography>
+      <Typography>SSN: {patient.ssn}</Typography>
+      <Typography>Occupation: {patient.occupation}</Typography>
       <Typography variant="h5" style={{ marginTop: '16px', marginBottom: '8px' }}>
-        entries
+        Entries
       </Typography>
       {patient.entries.length > 0 ? (
         patient.entries.map((entry) => (
           <div key={entry.id}>
-            <Typography>
-              {entry.date} <i>{entry.description}</i>
-            </Typography>
-            {entry.diagnosisCodes && entry.diagnosisCodes.length > 0 && (
-              <div>
-                <ul>
-                  {entry.diagnosisCodes.map((code) => (
-                    <li key={code}>
-                      <Typography>
-                        {code} {findDiagnosisName(code)}
-                      </Typography>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <EntryDetails entry={entry} diagnoses={diagnoses} />
           </div>
         ))
       ) : (
