@@ -1,11 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography } from '@mui/material';
+import {
+  Typography,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from '@mui/material';
 import { Male, Female, Transgender } from '@mui/icons-material';
 
 import { Patient, Diagnosis } from '../../types';
 import patientService from '../../services/patients';
 import EntryDetails from './EntryDetails';
+import EntryForm from './EntryForm';
 
 interface Props {
   diagnoses: Diagnosis[];
@@ -14,21 +22,26 @@ interface Props {
 const PatientDetailPage = ({ diagnoses }: Props) => {
   const { id } = useParams<{ id: string }>();
   const [patient, setPatient] = useState<Patient | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchPatient = useCallback(async () => {
+    try {
+      if (id) {
+        const patient = await patientService.getById(id);
+        setPatient(patient);
+      }
+    } catch (error) {
+      console.error('Failed to fetch patient data', error);
+    }
+  }, [id]);
 
   useEffect(() => {
-    const fetchPatient = async () => {
-      try {
-        if (id) {
-          const patient = await patientService.getById(id);
-          setPatient(patient);
-        }
-      } catch (error) {
-        console.error('Failed to fetch patient data', error);
-      }
-    };
-
     fetchPatient();
-  }, [id]);
+  }, [fetchPatient]);
+
+  const handleEntryAdded = async () => {
+    await fetchPatient();
+  };
 
   if (!patient) {
     return <Typography>Loading...</Typography>;
@@ -52,6 +65,23 @@ const PatientDetailPage = ({ diagnoses }: Props) => {
       </Typography>
       <Typography>SSN: {patient.ssn}</Typography>
       <Typography>Occupation: {patient.occupation}</Typography>
+
+      <Button variant="contained" color="primary" onClick={() => setIsModalOpen(true)}>
+        Add Entry
+      </Button>
+
+      <Dialog open={isModalOpen}>
+        <DialogTitle>Add Entry</DialogTitle>
+        <DialogContent>
+          {id && <EntryForm patientId={id} onEntryAdded={handleEntryAdded} diagnoses={diagnoses} />}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsModalOpen(false)} color="primary">
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Typography variant="h5" style={{ marginTop: '16px', marginBottom: '8px' }}>
         Entries
       </Typography>
